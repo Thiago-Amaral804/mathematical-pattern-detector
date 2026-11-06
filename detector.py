@@ -1,3 +1,6 @@
+from math import isqrt
+
+
 def eh_primo(n):
     """Retorna True quando n é um número primo."""
     if n < 2:
@@ -35,6 +38,17 @@ def eh_sequencia_de_primos(lista):
     )
 
 
+def identificar_quadrados(lista):
+    """Retorna a raiz do primeiro quadrado se forem quadrados consecutivos."""
+    raizes = [isqrt(numero) for numero in lista]
+
+    if all(raiz * raiz == numero for raiz, numero in zip(raizes, lista)):
+        if all(raizes[i + 1] == raizes[i] + 1 for i in range(len(raizes) - 1)):
+            return raizes[0]
+
+    return None
+
+
 def ler_lista():
     """Pede uma lista válida e repete a pergunta quando a entrada é inválida."""
     while True:
@@ -63,7 +77,7 @@ def ler_posicao():
     """Pede uma posição positiva e não deixa o programa encerrar por erro."""
     while True:
         try:
-            posicao = int(input("Qual posição você quer descobrir? "))
+            posicao = int(input("\nQual termo você quer descobrir? "))
 
             if posicao < 1:
                 print("❌ A posição precisa ser maior que zero.")
@@ -76,27 +90,38 @@ def ler_posicao():
 
 
 def analisar_lista(lista):
-    """Identifica o padrão e exibe o termo solicitado."""
-    # 1. Números ao quadrado (n²).
-    if all(lista[i] == (i + 1) ** 2 for i in range(len(lista))):
-        print("\n✅ Padrão detectado: Números ao Quadrado (n²)")
+    """Identifica o padrão, mostra sua fórmula e calcula o termo escolhido."""
+
+    # 1. Quadrados perfeitos consecutivos, começando em qualquer raiz.
+    primeira_raiz = identificar_quadrados(lista)
+
+    if primeira_raiz is not None:
+        print("\n✅ Padrão detectado: Quadrados perfeitos consecutivos!")
+        print(f"Fórmula exata: a(n) = ({primeira_raiz} + n - 1)²")
+
         pos = ler_posicao()
-        print(f"O número na posição {pos} é: {pos ** 2}")
+        resultado = (primeira_raiz + pos - 1) ** 2
+        print(f"O termo {pos} da sequência é: {resultado}")
         return True
 
     # 2. Números primos consecutivos.
     if eh_sequencia_de_primos(lista):
         print("\n✅ Padrão detectado: Sequência de números primos consecutivos!")
+        print("Representação exata: a(n) = p(k + n - 1),")
+        print(f"em que p(k) = {lista[0]} e p(k) é o primo da posição inicial.")
+        print("Regra: cada termo é o próximo número primo após o anterior.")
+        print("Observação: não há uma fórmula polinomial simples conhecida para os primos.")
+
         pos = ler_posicao()
+        resultado = lista[-1]
 
         if pos <= len(lista):
             resultado = lista[pos - 1]
         else:
-            resultado = lista[-1]
             for _ in range(pos - len(lista)):
                 resultado = proximo_primo(resultado)
 
-        print(f"O número primo na posição {pos} é: {resultado}")
+        print(f"O termo {pos} da sequência é: {resultado}")
         return True
 
     # 3. Sequência linear.
@@ -104,13 +129,13 @@ def analisar_lista(lista):
 
     if all(d == diffs[0] for d in diffs):
         razao = diffs[0]
-        ajuste = lista[0] - razao
-        sinal = "+" if ajuste >= 0 else "-"
+        primeiro = lista[0]
         print("\n✅ Padrão detectado: Sequência Linear!")
-        print(f"A fórmula é: {razao}n {sinal} {abs(ajuste)}")
+        print(f"Fórmula exata: a(n) = {primeiro} + (n - 1) × ({razao})")
 
         pos = ler_posicao()
-        print(f"O número na posição {pos} é: {(razao * pos) + ajuste}")
+        resultado = primeiro + (pos - 1) * razao
+        print(f"O termo {pos} da sequência é: {resultado}")
         return True
 
     # 4. Sequência de 2º grau.
@@ -121,21 +146,25 @@ def analisar_lista(lista):
         ]
 
         if all(sd == segunda_diff[0] for sd in segunda_diff):
-            print("\n✅ Padrão detectado: Sequência de 2º Grau")
-            print("A segunda diferença é constante:", segunda_diff[0])
+            primeiro = lista[0]
+            primeira_diff = diffs[0]
+            segunda = segunda_diff[0]
 
-            pos = ler_posicao()
-            a1 = lista[0]
-            d1 = diffs[0]
-            d2 = segunda_diff[0]
-
-            resultado = (
-                a1
-                + (pos - 1) * d1
-                + ((pos - 1) * (pos - 2) * d2) // 2
+            print("\n✅ Padrão detectado: Sequência de 2º Grau!")
+            print("Fórmula exata:")
+            print(
+                f"a(n) = {primeiro} + (n - 1) × ({primeira_diff}) "
+                f"+ ((n - 1)(n - 2) × ({segunda})) / 2"
             )
 
-            print(f"O número na posição {pos} é:\n\n{resultado}")
+            pos = ler_posicao()
+            resultado = (
+                primeiro
+                + (pos - 1) * primeira_diff
+                + ((pos - 1) * (pos - 2) * segunda) // 2
+            )
+
+            print(f"O termo {pos} da sequência é: {resultado}")
             return True
 
     print("\n❌ Não consegui identificar um padrão conhecido nessa lista.")
@@ -143,7 +172,7 @@ def analisar_lista(lista):
 
 
 def descobrir_padrao():
-    print("v1.2.1")
+    print("v1.3.0")
     print("-- Detector de padrões matemáticos --")
 
     while True:
