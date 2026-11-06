@@ -40,6 +40,9 @@ def eh_sequencia_de_primos(lista):
 
 def identificar_quadrados(lista):
     """Retorna a raiz do primeiro quadrado se forem quadrados consecutivos."""
+    if any(numero < 0 for numero in lista):
+        return None
+
     raizes = [isqrt(numero) for numero in lista]
 
     if all(raiz * raiz == numero for raiz, numero in zip(raizes, lista)):
